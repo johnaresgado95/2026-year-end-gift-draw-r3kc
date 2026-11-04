@@ -610,7 +610,9 @@ button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid transpare
 
   // Shared link: each phone locks to the first name it reveals
   function showGroup(d, hash){
-    const lockKey = 'picked-' + hash.slice(0, 64);
+    // Lock is tied to this exact draw: a new draw (new link) sends everyone back to picking their name
+    let hsh = 0; for (let i = 0; i < hash.length; i++) hsh = Math.imul(hsh ^ hash.charCodeAt(i), 16777619) >>> 0;
+    const lockKey = 'picked-' + hash.length + '-' + hsh.toString(36);
     let mine = null; try { mine = localStorage.getItem(lockKey); } catch(e){}
     const all = d.G.concat(d.B);
     const recipientOf = n => (all.find(p => p[0] === n) || [])[1];
