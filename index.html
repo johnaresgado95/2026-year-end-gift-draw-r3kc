@@ -1,0 +1,387 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style></head><body>
+<title>Exchange Gift Draw</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one narrow column. Organizer: names → draw → private links. Participant: own link → reveal */
+:root{
+  --bg:#f5f7f3; --surface:#ffffff; --ink:#17231e; --muted:#5b6a62;
+  --pine:#1f5c46; --pine-ink:#ffffff; --ribbon:#c42f48; --gold:#a87a10; --line:#dbe2dc; --soft:#e9efe9;
+  --display:"Gloock", Georgia, "Times New Roman", serif;
+  --body:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1612; --surface:#15201b; --ink:#e7eee9; --muted:#9aaaa1;
+  --pine:#58b48f; --pine-ink:#0b1410; --ribbon:#ee6a80; --gold:#e6bb4c; --line:#26342d; --soft:#1c2a23; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1612; --surface:#15201b; --ink:#e7eee9; --muted:#9aaaa1;
+  --pine:#58b48f; --pine-ink:#0b1410; --ribbon:#ee6a80; --gold:#e6bb4c; --line:#26342d; --soft:#1c2a23; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+.wrap{max-width:520px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 48px;display:flex;flex-direction:column;gap:22px}
+header{display:flex;flex-direction:column;gap:6px}
+.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ribbon);font-weight:700}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(34px,9vw,46px);line-height:1.02;margin:0;text-wrap:balance}
+h2{font-family:var(--display);font-weight:400;font-size:26px;margin:0;text-wrap:balance}
+p{margin:0}
+.muted{color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px}
+label{font-weight:600;font-size:14px}
+.row{display:flex;gap:8px}
+.between{justify-content:space-between;align-items:baseline}
+input[type=text]{flex:1;min-width:0;font:inherit;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+input[readonly]{font-size:13px;color:var(--muted)}
+input[type=text]:focus-visible,button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid transparent;padding:12px 16px;font-weight:600}
+.primary{background:var(--pine);color:var(--pine-ink)}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.small{padding:8px 12px;font-size:14px}
+.link{background:none;border:none;padding:4px 0;color:var(--muted);text-decoration:underline;font-weight:500;align-self:flex-start}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--soft);border-radius:999px;padding:6px 6px 6px 14px;font-weight:500}
+.chip button{padding:0;width:26px;height:26px;border-radius:50%;background:transparent;color:var(--muted);line-height:1;font-size:18px}
+.chip button:hover{background:var(--line);color:var(--ink)}
+.note{font-size:13px;color:var(--muted)}
+.tag{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gold)}
+.group{display:flex;flex-direction:column;gap:10px;padding-top:14px;border-top:1px solid var(--line)}
+h3{font-family:var(--display);font-weight:400;font-size:21px;margin:0;display:flex;align-items:baseline;gap:8px}
+.num{font-family:var(--body);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.links{display:flex;flex-direction:column;gap:12px}
+.links h3{margin-top:8px}
+.namegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.who{display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:left;background:var(--surface);border:1px solid var(--line);color:var(--ink);padding:14px}
+.who span{min-width:0;overflow-wrap:anywhere}
+.who.done{background:var(--soft);color:var(--muted)}
+.who .mark{font-size:12px;font-weight:700;color:var(--pine);flex:none}
+.rules{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.more{border-top:1px solid var(--line);padding-top:12px}
+.more summary{cursor:pointer;font-weight:600;color:var(--muted)}
+.more-body{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+.linkrow{display:flex;flex-direction:column;gap:6px;padding-top:12px;border-top:1px solid var(--line)}
+.linkrow:first-child{border-top:none;padding-top:0}
+.linkrow strong{overflow-wrap:anywhere}
+.reveal{text-align:center;align-items:center;padding:30px 18px;gap:10px;border-top:6px solid var(--ribbon)}
+.big{font-family:var(--display);font-size:clamp(40px,12vw,58px);line-height:1;color:var(--ribbon);overflow-wrap:anywhere}
+.budget{display:inline-block;margin-top:6px;padding:6px 14px;border-radius:999px;background:var(--soft);font-weight:600}
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+.actions button{flex:1 1 160px}
+.confirm{border:1px dashed var(--ribbon);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-weight:600;font-size:14px}
+@media (prefers-reduced-motion:no-preference){.reveal .big{animation:pop .45s cubic-bezier(.2,1.4,.4,1)}@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}}
+</style>
+
+<div class="wrap">
+  <header id="hdr">
+    <span class="eyebrow">Monito-Monita · Secret Santa</span>
+    <h1>Exchange Gift Draw</h1>
+    <p class="muted" id="intro">Add everyone and draw. You'll get a private link for each person to send by Messenger or text. Each link shows only who that person is giving to. Nobody gets their own name.</p>
+  </header>
+
+  <!-- ORGANIZER 1: names -->
+  <section id="setup" class="panel" hidden>
+    <div class="row between">
+      <h2>Who's joining?</h2>
+      <span id="exampleTag" class="tag">Example names</span>
+    </div>
+    <p class="note">Girls draw from the girls, boys draw from the boys.</p>
+    <div class="group">
+      <h3>Girls <span id="countGirls" class="num"></span></h3>
+      <form id="formGirls" class="row">
+        <input id="inputGirls" type="text" placeholder="Add girls (comma-separated)" autocomplete="off" aria-label="Girl's name">
+        <button class="primary" type="submit">Add</button>
+      </form>
+      <div id="chipsGirls" class="chips"></div>
+    </div>
+    <div class="group">
+      <h3>Boys <span id="countBoys" class="num"></span></h3>
+      <form id="formBoys" class="row">
+        <input id="inputBoys" type="text" placeholder="Add boys (comma-separated)" autocomplete="off" aria-label="Boy's name">
+        <button class="primary" type="submit">Add</button>
+      </form>
+      <div id="chipsBoys" class="chips"></div>
+    </div>
+    <p id="count" class="note"></p>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <label for="budgetInput">Gift budget (optional)</label>
+      <input id="budgetInput" type="text" placeholder="e.g. ₱500" autocomplete="off">
+    </div>
+    <div class="actions">
+      <button id="drawBtn" class="primary" type="button">Draw names</button>
+      <button id="clearBtn" class="ghost" type="button">Clear list</button>
+    </div>
+  </section>
+
+  <!-- ORGANIZER 2: private links -->
+  <section id="board" class="panel" hidden>
+    <h2>Names are drawn</h2>
+    <p class="muted">Share this one link in your group chat. Everyone opens it on their own phone, taps their own name, and sees who they're giving to.</p>
+    <ul class="note rules">
+      <li>Girls only get girls, boys only get boys.</li>
+      <li>Nobody gets themselves, and no two people get the same person.</li>
+      <li>The pairings are hidden, even from you. You can join the draw too.</li>
+      <li>Each phone locks to the first name it reveals, so it can't peek at anyone else's.</li>
+    </ul>
+    <input id="groupLink" type="text" readonly aria-label="Link for everyone">
+    <button id="copyGroupBtn" class="primary" type="button">Copy link for everyone</button>
+    <details class="more">
+      <summary>Or send private links one by one</summary>
+      <div class="more-body">
+        <p class="note">Each private link shows only that person's pick, so nobody can tap someone else's name.</p>
+        <button id="copyAllBtn" class="ghost small" type="button" style="align-self:flex-start">Copy all private links as a list</button>
+        <div id="links" class="links"></div>
+      </div>
+    </details>
+    <div id="resetBox" class="confirm" hidden>
+      <p>Draw again? All the links you already sent will stop matching, so you'd need to resend everyone's new link.</p>
+      <div class="actions">
+        <button id="resetYes" class="primary" type="button">Yes, start over</button>
+        <button id="resetNo" class="ghost" type="button">Keep this draw</button>
+      </div>
+    </div>
+    <button id="resetBtn" class="link" type="button">Start over / edit names</button>
+  </section>
+
+  <!-- PARTICIPANT (shared link): pick your own name -->
+  <section id="pick" class="panel" hidden>
+    <h2>Tap your name</h2>
+    <p class="note">Only tap your own name. Make sure nobody else is looking.</p>
+    <span id="pickBudget" class="budget" hidden style="align-self:flex-start"></span>
+    <div id="pickGroups" class="links"></div>
+  </section>
+
+  <!-- PARTICIPANT: gate + reveal -->
+  <section id="gate" class="panel" hidden>
+    <span class="tag">Your private draw</span>
+    <h2 id="gateTitle"></h2>
+    <p class="muted" id="gateText">Tap below to see who you're giving a gift to.</p>
+    <div class="actions">
+      <button id="revealBtn" class="primary" type="button">Reveal my person</button>
+      <button id="notMeBtn" class="ghost" type="button" hidden>Not me, go back</button>
+    </div>
+  </section>
+
+  <section id="reveal" class="panel reveal" hidden>
+    <span class="tag" id="revealFor"></span>
+    <p class="muted">You're giving a gift to</p>
+    <div class="big" id="revealName"></div>
+    <span id="revealBudget" class="budget" hidden></span>
+    <p class="note" style="margin-top:10px">Keep it secret. You can open this link again anytime.</p>
+  </section>
+
+  <section id="bad" class="panel" hidden>
+    <h2>This link doesn't work</h2>
+    <p class="muted">It may have been cut off when it was copied. Ask the organizer to send your link again.</p>
+  </section>
+</div>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+(function(){
+  const BASE = location.href.split('#')[0];
+  const KEY = 'exchange-gift-draw-v3';
+  const MASK = 'monitomonita';
+  const GROUPS = [['girls','Girls'],['boys','Boys']];
+  const $ = id => document.getElementById(id);
+  let state = { girls: ['Ana','Carla','Ella'], boys: ['Ben','Dodong','Jun'], example: true, budget: '', pairs: null, groupOf: null };
+  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && Array.isArray(s.girls)) state = Object.assign(state, s); } catch(e){}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){} };
+
+  // Encode a person's draw into a plain hash (letters + digits only) so it survives sharing
+  function encode(obj){
+    const bytes = new TextEncoder().encode(JSON.stringify(obj));
+    let hex = '';
+    bytes.forEach((b, i) => { hex += (b ^ MASK.charCodeAt(i % MASK.length)).toString(16).padStart(2, '0'); });
+    return hex;
+  }
+  function decode(hash){
+    const m = /^(gift|all)-([0-9a-f]+)$/.exec(hash || '');
+    if (!m || m[2].length % 2) return null;
+    try {
+      const bytes = new Uint8Array(m[2].length / 2);
+      for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(m[2].substr(i * 2, 2), 16) ^ MASK.charCodeAt(i % MASK.length);
+      const o = JSON.parse(new TextDecoder().decode(bytes));
+      if (m[1] === 'gift') return o && o.g && o.r ? { kind: 'one', d: o } : null;
+      return o && Array.isArray(o.G) && Array.isArray(o.B) ? { kind: 'all', d: o } : null;
+    } catch(e){ return null; }
+  }
+
+  // Shuffle, then each person gives to the next one in the circle: nobody draws themselves
+  function draw(names){
+    const a = names.slice();
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+    const pairs = {};
+    a.forEach((n, i) => { pairs[n] = a[(i + 1) % a.length]; });
+    return pairs;
+  }
+
+  function show(id){ ['setup','board','pick','gate','reveal','bad'].forEach(s => $(s).hidden = s !== id); window.scrollTo(0,0); }
+  let tt; function toast(msg){ const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(tt); tt = setTimeout(() => t.hidden = true, 1800); }
+  function copy(text, input){
+    const fallback = () => { if (input) { input.focus(); input.select(); } toast('Select and copy the link'); };
+    try { navigator.clipboard.writeText(text).then(() => toast('Copied'), fallback); } catch(e){ fallback(); }
+  }
+
+  function linkFor(n){ return BASE + '#gift-' + encode({ g: n, r: state.pairs[n], b: (state.budget || '').trim() }); }
+  function groupLink(){
+    const list = key => Object.keys(state.pairs).filter(n => state.groupOf[n] === key).map(n => [n, state.pairs[n]]);
+    return BASE + '#all-' + encode({ G: list('girls'), B: list('boys'), t: (state.budget || '').trim() });
+  }
+
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  function problem(){
+    const g = state.girls.length, b = state.boys.length;
+    if (g + b === 0) return 'Add names to start.';
+    if (g === 1) return 'Girls need at least 2 people (or none).';
+    if (b === 1) return 'Boys need at least 2 people (or none).';
+    return '';
+  }
+
+  function renderSetup(){
+    GROUPS.forEach(([key]) => {
+      const c = $('chips' + cap(key)); c.innerHTML = '';
+      state[key].forEach((n, i) => {
+        const el = document.createElement('span'); el.className = 'chip'; el.textContent = n;
+        const x = document.createElement('button'); x.type = 'button'; x.setAttribute('aria-label', 'Remove ' + n); x.textContent = '×';
+        x.onclick = () => { state[key].splice(i, 1); state.example = false; save(); renderSetup(); };
+        el.appendChild(x); c.appendChild(el);
+      });
+      $('count' + cap(key)).textContent = state[key].length ? `· ${state[key].length}` : '';
+    });
+    const p = problem();
+    $('count').textContent = p || `${state.girls.length + state.boys.length} people in the draw.`;
+    $('drawBtn').disabled = !!p;
+    $('exampleTag').hidden = !state.example;
+    $('budgetInput').value = state.budget || '';
+  }
+
+  function renderBoard(){
+    $('groupLink').value = groupLink();
+    const box = $('links'); box.innerHTML = '';
+    let i = 0;
+    GROUPS.forEach(([key, label]) => {
+      const members = Object.keys(state.pairs).filter(n => state.groupOf[n] === key);
+      if (!members.length) return;
+      const h = document.createElement('h3'); h.textContent = label; box.appendChild(h);
+      members.forEach(n => addRow(n, i++));
+    });
+    function addRow(n, i){
+      const url = linkFor(n);
+      const row = document.createElement('div'); row.className = 'linkrow';
+      const top = document.createElement('div'); top.className = 'row between'; top.style.alignItems = 'center';
+      const s = document.createElement('strong'); s.textContent = n;
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'primary small'; b.textContent = 'Copy link';
+      const inp = document.createElement('input'); inp.type = 'text'; inp.readOnly = true; inp.value = url; inp.id = 'link-' + i; inp.setAttribute('aria-label', 'Link for ' + n);
+      b.onclick = () => copy(url, inp);
+      top.append(s, b); row.append(top, inp); box.appendChild(row);
+    }
+  }
+
+  function revealFor(giver, recipient, budget){
+    $('revealFor').textContent = 'For ' + giver;
+    $('revealName').textContent = recipient;
+    $('revealBudget').hidden = !budget; $('revealBudget').textContent = 'Budget: ' + (budget || '');
+    show('reveal');
+  }
+
+  function showParticipant(d){
+    $('notMeBtn').hidden = true;
+    $('gateTitle').textContent = `Hi ${d.g}!`;
+    $('gateText').textContent = 'This link is just for you. Tap below to see who you’re giving a gift to.';
+    $('revealBtn').onclick = () => revealFor(d.g, d.r, d.b);
+    show('gate');
+  }
+
+  // Shared link: each phone locks to the first name it reveals, so it can't peek at others
+  function showGroup(d, hash){
+    const lockKey = 'picked-' + hash.slice(0, 64);
+    let mine = null; try { mine = localStorage.getItem(lockKey); } catch(e){}
+    const all = d.G.concat(d.B);
+    const recipientOf = n => (all.find(p => p[0] === n) || [])[1];
+    if (mine && recipientOf(mine)) {
+      return revealFor(mine, recipientOf(mine), d.t);
+    }
+    $('pickBudget').hidden = !d.t; $('pickBudget').textContent = 'Budget: ' + (d.t || '');
+    const box = $('pickGroups'); box.innerHTML = '';
+    [['Girls', d.G], ['Boys', d.B]].forEach(([label, list]) => {
+      if (!list.length) return;
+      const h = document.createElement('h3'); h.textContent = label; box.appendChild(h);
+      const grid = document.createElement('div'); grid.className = 'namegrid';
+      list.forEach(([n]) => {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'who';
+        const s = document.createElement('span'); s.textContent = n; b.appendChild(s);
+        b.onclick = () => {
+          $('gateTitle').textContent = `Are you ${n}?`;
+          $('gateText').textContent = 'Once you reveal, this phone stays locked to ' + n + '’s pick. Only continue if you are ' + n + '.';
+          $('notMeBtn').hidden = false;
+          $('notMeBtn').onclick = () => show('pick');
+          $('revealBtn').onclick = () => {
+            try { localStorage.setItem(lockKey, n); } catch(e){}
+            revealFor(n, recipientOf(n), d.t);
+          };
+          show('gate');
+        };
+        grid.appendChild(b);
+      });
+      box.appendChild(grid);
+    });
+    show('pick');
+  }
+
+  function route(){
+    const h = location.hash.slice(1);
+    if (h) {
+      $('intro').hidden = true;
+      const r = decode(h);
+      if (r && r.kind === 'one') return showParticipant(r.d);
+      if (r && r.kind === 'all') return showGroup(r.d, h);
+      return show('bad');
+    }
+    $('intro').hidden = false;
+    if (state.pairs) { renderBoard(); show('board'); } else { renderSetup(); show('setup'); }
+  }
+
+  GROUPS.forEach(([key]) => {
+    const inp = $('input' + cap(key));
+    $('form' + cap(key)).addEventListener('submit', e => {
+      e.preventDefault();
+      const v = inp.value.trim(); if (!v) return;
+      if (state.example) { state.girls = []; state.boys = []; state.example = false; }
+      const taken = state.girls.concat(state.boys).map(x => x.toLowerCase());
+      const dupes = [];
+      v.split(',').map(s => s.trim()).filter(Boolean).forEach(p => {
+        if (taken.includes(p.toLowerCase())) dupes.push(p); else { state[key].push(p); taken.push(p.toLowerCase()); }
+      });
+      if (dupes.length) toast(`Already added: ${dupes.join(', ')}`);
+      inp.value = ''; save(); renderSetup(); inp.focus();
+    });
+  });
+  $('budgetInput').addEventListener('input', e => { state.budget = e.target.value; save(); });
+  $('clearBtn').onclick = () => { state.girls = []; state.boys = []; state.example = false; save(); renderSetup(); $('inputGirls').focus(); };
+  $('drawBtn').onclick = () => {
+    if (problem()) return;
+    state.pairs = {}; state.groupOf = {};
+    GROUPS.forEach(([key]) => {
+      if (state[key].length < 2) return;
+      Object.assign(state.pairs, draw(state[key]));
+      state[key].forEach(n => state.groupOf[n] = key);
+    });
+    save(); renderBoard(); show('board');
+  };
+  $('copyGroupBtn').onclick = () => copy('Exchange gift draw! Open this link, tap YOUR name, and keep your person secret:\n' + groupLink(), $('groupLink'));
+  $('copyAllBtn').onclick = () => {
+    const text = 'Exchange gift draw! Open only your own link:\n\n' + GROUPS.map(([key, label]) => {
+      const m = Object.keys(state.pairs).filter(n => state.groupOf[n] === key);
+      return m.length ? `${label.toUpperCase()}\n` + m.map(n => `${n}: ${linkFor(n)}`).join('\n\n') : '';
+    }).filter(Boolean).join('\n\n');
+    copy(text, null);
+  };
+  $('resetBtn').onclick = () => { $('resetBox').hidden = false; };
+  $('resetNo').onclick = () => { $('resetBox').hidden = true; };
+  $('resetYes').onclick = () => { state.pairs = null; save(); $('resetBox').hidden = true; renderSetup(); show('setup'); };
+  window.addEventListener('hashchange', route);
+  route();
+})();
+</script>
+
+</body></html>
