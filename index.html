@@ -114,6 +114,23 @@ button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid transpare
 .linkrow strong{overflow-wrap:anywhere}
 .namegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
 .draw-area{display:flex;flex-direction:column;gap:16px;scroll-margin-top:12px}
+.rider-card{align-items:center;text-align:center;padding:24px 18px;gap:10px;border-color:rgba(232,40,60,.5);background:radial-gradient(120% 90% at 50% 0%,rgba(232,40,60,.2),transparent 60%),var(--surface)}
+.rider-line{font-family:var(--brush);font-size:26px;line-height:1.15}
+.big-cta{font-size:21px;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:60px;margin-top:6px;box-shadow:0 8px 24px rgba(232,40,60,.35)}
+/* Draw dialog: a bottom sheet on phones, a centered card on wide screens */
+dialog.sheet{border:none;padding:0;margin:auto auto 0;width:100%;max-width:560px;max-height:calc(100% - 24px - env(safe-area-inset-top,0px));background:var(--surface);color:var(--ink);border-radius:20px 20px 0 0;border-top:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden}
+dialog.sheet:not([open]){display:none}
+dialog.sheet::backdrop{background:rgba(4,6,12,.78);backdrop-filter:blur(3px)}
+@media (min-width:600px){dialog.sheet{margin:auto;border-radius:20px;border:1px solid var(--line);max-height:calc(100% - 48px)}}
+.sheet-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px max(18px,env(safe-area-inset-right,0px)) 12px max(18px,env(safe-area-inset-left,0px));border-bottom:1px solid var(--line);background:linear-gradient(100deg,rgba(232,40,60,.14),rgba(58,130,255,.1))}
+.sheet-head h2{font-size:30px}
+.x{flex:none;width:42px;height:42px;padding:0;border-radius:50%;display:grid;place-items:center;background:var(--raise);color:var(--ink);border:1px solid var(--line)}
+.sheet-body{overflow-y:auto;overscroll-behavior:contain;padding:16px max(18px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:16px}
+.sheet-body .panel{border:none;background:transparent;padding:0}
+.sheet-body .actions{flex-direction:column}
+.sheet-body .actions button{flex:none;width:100%;min-height:56px}
+.sheet-body .panel.reveal{border:1px solid var(--line);padding:26px 16px;background:radial-gradient(120% 90% at 50% 0%,rgba(58,130,255,.22),transparent 60%),var(--raise)}
+dialog.sheet #confetti{position:fixed}
 .hero-cta{font-size:19px;letter-spacing:.03em;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;max-width:420px;margin-top:4px;min-height:56px;box-shadow:0 8px 24px rgba(232,40,60,.35)}
 .steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .steps li{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;font-size:12px;font-weight:600;color:var(--muted);line-height:1.2;position:relative}
@@ -176,8 +193,8 @@ button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid transpare
       <div class="rideday" id="rideDay" hidden>Ride day, mga boss!</div>
     </div>
     <button id="heroCta" class="go hero-cta" type="button" hidden>
-      Find my monito / monita
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 2v13M3 9l6 6 6-6"/></svg>
+      <svg width="22" height="22" viewBox="0 0 26 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="9" width="22" height="14"/><rect x="1" y="5" width="24" height="4"/><path d="M13 5v18M13 5c-2-4-7-5-7-1.5S13 5 13 5Zm0 0c2-4 7-5 7-1.5S13 5 13 5Z"/></svg>
+      Bunot kog pangalan
     </button>
   </div>
 </header>
@@ -251,11 +268,6 @@ button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid transpare
     <h2>Exchange Gift Draw</h2>
     <p class="muted" id="intro">Add the riders, draw once, and share one link. Each rider taps their own name and finds out who they're getting a gift for.</p>
   </div>
-  <ol id="steps" class="steps" hidden aria-label="Steps">
-    <li data-step="pick"><span>1</span>Find your name</li>
-    <li data-step="gate"><span>2</span>Confirm it's you</li>
-    <li data-step="reveal"><span>3</span>See your pick</li>
-  </ol>
 
   <!-- ORGANIZER 1: names -->
   <section id="setup" class="panel" hidden>
@@ -330,7 +342,40 @@ button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid transpare
     <button id="resetBtn" class="link" type="button">Start over / edit names</button>
   </section>
 
-  <!-- PARTICIPANT (shared link) -->
+  <!-- RIDER: teaser that opens the draw dialog -->
+  <section id="riderCard" class="panel rider-card" hidden>
+    <p class="rider-line">Na-draw na ang mga pangalan, boss!</p>
+    <p class="muted" id="riderNote">Tap below to find out who you're getting a gift for. Only you will see it.</p>
+    <button id="riderCta" class="go big-cta" type="button">
+      <svg width="22" height="22" viewBox="0 0 26 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="9" width="22" height="14"/><rect x="1" y="5" width="24" height="4"/><path d="M13 5v18M13 5c-2-4-7-5-7-1.5S13 5 13 5Zm0 0c2-4 7-5 7-1.5S13 5 13 5Z"/></svg>
+      Bunot kog pangalan
+    </button>
+  </section>
+
+  <section id="bad" class="panel" hidden>
+    <h3>This link doesn't work</h3>
+    <p class="muted">It may have been cut off when it was copied. Ask the organizer to send the link again.</p>
+  </section>
+  </div>
+
+  <p class="sign">See you mga boss!</p>
+</main>
+<dialog id="drawDialog" class="sheet" aria-labelledby="dlgTitle">
+  <div class="sheet-head">
+    <div>
+      <span class="eyebrow">Monito-Monita</span>
+      <h2 id="dlgTitle">Bunot kog pangalan</h2>
+    </div>
+    <button id="dlgClose" class="x" type="button" aria-label="Close">
+      <svg width="18" height="18" viewBox="0 0 18 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M3 3l12 12M15 3 3 15"/></svg>
+    </button>
+  </div>
+  <div class="sheet-body">
+  <ol id="steps" class="steps" hidden aria-label="Steps">
+    <li data-step="pick"><span>1</span>Find your name</li>
+    <li data-step="gate"><span>2</span>Confirm it's you</li>
+    <li data-step="reveal"><span>3</span>See your pick</li>
+  </ol>
   <section id="pick" class="panel" hidden>
     <h3>Tap your name</h3>
     <p class="note">Only tap your own name, and make sure nobody's looking at your screen.</p>
@@ -360,15 +405,8 @@ button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid transpare
     <span id="revealBudget" class="budget" hidden></span>
     <p class="note" style="margin-top:8px">Bring the gift to Hacienda Don Juan on Nov 28. Keep it secret until the exchange. You can open this link again anytime.</p>
   </section>
-
-  <section id="bad" class="panel" hidden>
-    <h3>This link doesn't work</h3>
-    <p class="muted">It may have been cut off when it was copied. Ask the organizer to send the link again.</p>
-  </section>
   </div>
-
-  <p class="sign">See you mga boss!</p>
-</main>
+</dialog>
 <canvas id="confetti" hidden></canvas>
 <div id="toast" class="toast" hidden></div>
 
@@ -467,10 +505,15 @@ button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid transpare
       li.classList.toggle('on', i === at); li.classList.toggle('done', at > -1 && i < at);
     });
   }
-  function jump(){
-    const smooth = !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
-    $('drawArea').scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
+  // Riders do the whole draw inside one dialog
+  function jump(){ $('drawDialog').querySelector('.sheet-body').scrollTop = 0; }
+  function openDraw(){
+    const dl = $('drawDialog');
+    if (!dl.open) { try { dl.showModal(); } catch(e){ dl.setAttribute('open', ''); } }
+    jump();
   }
+  function closeDraw(){ const dl = $('drawDialog'); try { dl.close(); } catch(e){ dl.removeAttribute('open'); } }
+  function markPicked(){ $('riderNote').textContent = 'You already have your monito / monita. Tap below to see it again.'; }
   let tt; function toast(msg){ const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(tt); tt = setTimeout(() => t.hidden = true, 1800); }
   function copy(text, input){
     const fallback = () => { if (input) { input.focus(); input.select(); } toast('Select and copy the link'); };
@@ -481,6 +524,7 @@ button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid transpare
   function confetti(){
     if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const c = $('confetti'), ctx = c.getContext('2d');
+    const dl = $('drawDialog'); (dl.open ? dl : document.body).appendChild(c); // stay above the dialog
     c.hidden = false; c.width = innerWidth; c.height = innerHeight;
     const colors = ['#3a82ff','#e8283c','#ffffff','#ff9a3c'];
     const bits = Array.from({ length: 140 }, () => ({
@@ -597,7 +641,7 @@ button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid transpare
     $('revealFor').textContent = 'For ' + giver;
     $('revealName').textContent = recipient;
     $('revealBudget').hidden = !budget; $('revealBudget').textContent = 'Budget: ' + (budget || '');
-    show('reveal'); jump(); confetti();
+    show('reveal'); jump(); confetti(); markPicked();
   }
 
   function showParticipant(d){
@@ -620,6 +664,7 @@ button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid transpare
       $('revealFor').textContent = 'For ' + mine;
       $('revealName').textContent = recipientOf(mine);
       $('revealBudget').hidden = !d.t; $('revealBudget').textContent = 'Budget: ' + (d.t || '');
+      markPicked();
       return show('reveal');
     }
     $('pickBudget').hidden = !d.t; $('pickBudget').textContent = 'Budget: ' + (d.t || '');
@@ -671,15 +716,16 @@ button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid transpare
     // Read the draw from ?… (Messenger may append &fbclid=…, so stop at the first &) or from an older #… link
     const h = location.search.slice(1).split('&')[0] || location.hash.slice(1);
     if (h) {
-      $('intro').textContent = 'The names are already drawn. Find out who you’re getting a gift for.';
-      // Riders: put the draw right under the title, with a button that jumps to it
+      $('intro').hidden = true; // the rider card below says it
+      // Riders: the draw card sits right under the title; both buttons open the draw dialog
       const main = document.querySelector('main');
       main.insertBefore($('drawArea'), main.firstChild);
-      $('heroCta').hidden = false; $('heroCta').onclick = jump;
       const r = decode(h);
-      if (r && r.kind === 'one') return showParticipant(r.d);
-      if (r && r.kind === 'all') { $('steps').hidden = false; return showGroup(r.d, h); }
-      return show('bad');
+      if (!r) { $('heroCta').hidden = true; $('riderCard').hidden = true; return show('bad'); }
+      $('heroCta').hidden = false; $('riderCard').hidden = false;
+      $('heroCta').onclick = openDraw; $('riderCta').onclick = openDraw;
+      if (r.kind === 'one') return showParticipant(r.d);
+      $('steps').hidden = false; return showGroup(r.d, h);
     }
     if (state.pairs && state.drawn) { renderBoard(); show('board'); } else { renderSetup(); show('setup'); }
   }
@@ -728,6 +774,8 @@ button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid transpare
   $('resetBtn').onclick = () => { $('resetBox').hidden = false; };
   $('resetNo').onclick = () => { $('resetBox').hidden = true; };
   $('resetYes').onclick = () => { state.pairs = null; state.drawn = null; save(); $('resetBox').hidden = true; renderSetup(); show('setup'); };
+  $('dlgClose').onclick = closeDraw;
+  $('drawDialog').addEventListener('click', e => { if (e.target === $('drawDialog')) closeDraw(); }); // tap outside to close
   window.addEventListener('hashchange', route);
   route();
 })();
