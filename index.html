@@ -309,6 +309,8 @@ button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid transpare
       </form>
     </div>
     <input id="groupLink" type="text" readonly aria-label="Link for everyone">
+    <p id="shortStatus" class="note" hidden></p>
+    <p id="longNote" class="note" hidden>This link is longer because the names or budget changed from the list saved in this page. Undo the changes for the short link.</p>
     <button id="copyGroupBtn" class="primary" type="button">Copy link for everyone</button>
     <details class="more">
       <summary>Or send private links one by one</summary>
@@ -372,13 +374,19 @@ button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid transpare
 
 <script>
 (function(){
-  const BASE = (/^https?:$/.test(location.protocol) ? location.href.split('#')[0] : '');
+  const BASE = (/^https?:$/.test(location.protocol) ? location.href.split('#')[0].split('?')[0] : '');
+  const SEP = '?'; // '?' on a real website (survives shorteners and Messenger), '#' inside the Claude preview
+  // Riders saved into the page. When the draw uses exactly these, the share link only needs the draw code.
+  const ROSTER = {"girls": [], "boys": [], "budget": ""};
+  const hasRoster = ROSTER.girls.length + ROSTER.boys.length > 0;
   const KEY = 'r3-yearend-gift-draw-v1';
   const MASK = 'monitomonita';
   const CALL_TIME = Date.parse('2026-11-28T05:00:00+08:00');
   const GROUPS = [['girls','Girls'],['boys','Boys']];
   const $ = id => document.getElementById(id);
-  let state = { girls: ['Ana','Carla','Ella'], boys: ['Ben','Dodong','Jun'], example: true, budget: '', pairs: null, groupOf: null, drawn: null };
+  let state = hasRoster
+    ? { girls: ROSTER.girls.slice(), boys: ROSTER.boys.slice(), example: false, budget: ROSTER.budget || '', pairs: null, groupOf: null, drawn: null }
+    : { girls: ['Ana','Carla','Ella'], boys: ['Ben','Dodong','Jun'], example: true, budget: '', pairs: null, groupOf: null, drawn: null };
   try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && Array.isArray(s.girls)) state = Object.assign(state, s); } catch(e){}
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){} };
 
@@ -431,7 +439,14 @@ button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid transpare
 
   function decode(hash){
     try {
-      const kind = hash.charAt(0), parts = unpack(hash.slice(1)).split('\n');
+      const kind = hash.charAt(0);
+      if (kind === 'd') {
+        const code = hash.slice(1);
+        if (!hasRoster || !/^[0-9a-z]{1,8}$/.test(code)) return null;
+        const pairs = pairsFrom(ROSTER.girls, ROSTER.boys, code);
+        return { kind: 'all', d: { G: ROSTER.girls.map(n => [n, pairs[n]]), B: ROSTER.boys.map(n => [n, pairs[n]]), t: ROSTER.budget || '' } };
+      }
+      const parts = unpack(hash.slice(1)).split('\n');
       if (kind === 'p' && parts.length === 3 && parts[0] && parts[1]) return { kind: 'one', d: { g: parts[0], r: parts[1], b: parts[2] } };
       if (kind === 'a' && parts.length === 4) {
         const girls = parts[0] ? parts[0].split(',') : [], boys = parts[1] ? parts[1].split(',') : [];
@@ -486,10 +501,42 @@ button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid transpare
   const budgetText = () => (state.budget || '').trim().replace(/\n/g, ' ');
   // Links need a real web address in front. In a preview (about:srcdoc, file://) ask for the page's address instead.
   const base = () => BASE || (state.site || '');
-  function linkFor(n){ return base() + '#p' + pack([n, state.pairs[n], budgetText()].join('\n')); }
+  function linkFor(n){ return base() + SEP + 'p' + pack([n, state.pairs[n], budgetText()].join('\n')); }
+  const same = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
+  const usesRoster = () => hasRoster && same(state.drawn.girls, ROSTER.girls) && same(state.drawn.boys, ROSTER.boys) && budgetText() === (ROSTER.budget || '');
   function groupLink(){
     const d = state.drawn;
-    return base() + '#a' + pack([d.girls.join(','), d.boys.join(','), budgetText(), d.code].join('\n'));
+    if (usesRoster()) return base() + SEP + 'd' + d.code;
+    return base() + SEP + 'a' + pack([d.girls.join(','), d.boys.join(','), budgetText(), d.code].join('\n'));
+  }
+
+  // Shorten the share link with is.gd (free, no account, no ads). Called once per draw; falls back to the full link.
+  let jsonp = 0;
+  function shorten(long, done){
+    state.short = state.short || {};
+    if (state.short[long]) return done(state.short[long]);
+    if (!/^https?:\/\//.test(long)) return done(null);
+    const name = '__isgd' + (++jsonp) + '_' + Date.now();
+    const tag = document.createElement('script');
+    let finished = false;
+    const finish = url => { if (finished) return; finished = true; try { delete window[name]; } catch(e){} tag.remove(); if (url) { state.short[long] = url; save(); } done(url); };
+    window[name] = res => finish(res && res.shorturl ? res.shorturl : null);
+    tag.onerror = () => finish(null);
+    setTimeout(() => finish(null), 8000);
+    tag.src = 'https://is.gd/create.php?format=json&callback=' + name + '&url=' + encodeURIComponent(long);
+    document.head.appendChild(tag);
+  }
+  let shareLink = '';
+  function makeShort(){
+    const long = groupLink();
+    shareLink = long;
+    $('groupLink').value = long;
+    $('shortStatus').textContent = 'Making a short link\u2026'; $('shortStatus').hidden = false;
+    shorten(long, url => {
+      if (groupLink() !== long) return; // a newer draw replaced this one
+      if (url) { shareLink = url; $('groupLink').value = url; $('shortStatus').hidden = true; }
+      else { $('shortStatus').textContent = 'Couldn\u2019t make a short link right now, so this is the full link. It works the same.'; }
+    });
   }
 
   const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
@@ -525,7 +572,8 @@ button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid transpare
     $('groupLink').hidden = !ready; $('copyGroupBtn').hidden = !ready;
     $('copyGroupBtn').closest('.panel').querySelector('.more').hidden = !ready;
     if (!ready) return;
-    $('groupLink').value = groupLink();
+    makeShort();
+    $('longNote').hidden = !hasRoster || usesRoster();
     const box = $('links'); box.innerHTML = '';
     let i = 0;
     GROUPS.forEach(([key, label]) => {
@@ -618,7 +666,8 @@ button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid transpare
   }
 
   function route(){
-    const h = location.hash.slice(1);
+    // Read the draw from ?… (Messenger may append &fbclid=…, so stop at the first &) or from an older #… link
+    const h = location.search.slice(1).split('&')[0] || location.hash.slice(1);
     if (h) {
       $('intro').textContent = 'The names are already drawn. Find out who you’re getting a gift for.';
       // Riders: put the draw right under the title, with a button that jumps to it
@@ -666,7 +715,7 @@ button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid transpare
     if (!/^https?:\/\/[^\s\/]+\.[^\s]+/i.test(v)) { toast('Paste the full page address'); return; }
     state.site = v; save(); renderBoard();
   });
-  $('copyGroupBtn').onclick =() => copy('R3 Year End Party gift draw! Open this link, tap YOUR name, and keep your monito/monita secret:\n' + groupLink(), $('groupLink'));
+  $('copyGroupBtn').onclick =() => copy('R3 Year End Party gift draw! Open this link, tap YOUR name, and keep your monito/monita secret:\n' + (shareLink || groupLink()), $('groupLink'));
   $('copyAllBtn').onclick = () => {
     const text = 'R3 Year End Party gift draw! Open only your own link:\n\n' + GROUPS.map(([key, label]) => {
       const m = Object.keys(state.pairs).filter(n => state.groupOf[n] === key);
