@@ -1,0 +1,23 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//R3 Kidapawan//Year End Party//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:R3 gift reminder
+X-WR-TIMEZONE:Asia/Manila
+BEGIN:VEVENT
+UID:r3-yep-2026-gift@r3kidapawan
+DTSTAMP:20261106T145047Z
+DTSTART:20261126T110000Z
+DTEND:20261126T113000Z
+SUMMARY:Buy and wrap your monito/monita gift
+DESCRIPTION:R3 Year End Party gift exchange on Nov 29 at Hacienda Don Juan
+ \, Glan. Bring the gift wrapped. Keep it secret!
+LOCATION:Kidapawan City
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Buy and wrap your monito/monita gift
+TRIGGER:PT0S
+END:VALARM
+END:VEVENT
+END:VCALENDAR

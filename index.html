@@ -257,7 +257,15 @@ button{font:inherit;cursor:pointer;border-radius:12px;border:1px solid transpare
 .r-what small{display:block;color:var(--muted);font-size:12px}
 .gcal{font-size:12px;font-weight:700;color:var(--ink);text-decoration:none;padding:7px 10px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}
 .gcal:hover{border-color:var(--blue)}
-.result .ghost.wide{margin-top:6px}
+.btn-link{text-decoration:none;border-radius:12px;font-weight:700;padding:12px 16px}
+.btn-link:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.remind-gift{width:100%;display:flex;flex-direction:column;gap:10px;margin-top:6px;padding:12px;border-radius:14px;border:1px solid var(--line);background:var(--surface);text-align:left}
+.rg-title{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-weight:700}
+.rg-title svg{color:var(--blue);flex:none}
+.rg-title span{margin-left:auto;font-size:12px;color:var(--sun);font-weight:700}
+.rg-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rg-btns .btn-link{display:flex;align-items:center;justify-content:center;min-height:48px;text-align:center;font-size:14px;padding:10px 8px;color:var(--ink);border:1px solid var(--line)}
+.rg-btns .btn-link:hover{border-color:var(--blue)}
 .backup-state{display:flex;align-items:center;gap:6px}
 .backup-state.ok{color:var(--ok)}
 .backup-state.stale{color:var(--sun)}
@@ -528,11 +536,12 @@ dialog.sheet::backdrop{background:rgba(4,6,12,.8);backdrop-filter:blur(3px)}
       <div><h3 id="remindTitle">Remind me</h3><p class="note">Put these on your phone's calendar so you don't miss anything.</p></div>
     </div>
     <ul class="remind-list" id="remindList"></ul>
-    <button id="icsBtn" class="primary wide" type="button">
+    <a id="icsBtn" class="primary wide btn-link" href="reminders.ics" target="_blank" rel="noopener">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/></svg>
       Add all to my calendar
-    </button>
-    <p class="note">If the button does nothing inside Messenger, tap ⋯ and open the page in Chrome or Safari, or use the Google Calendar buttons.</p>
+    </a>
+    <p class="note inapp-note" hidden>You're in Messenger's browser, which can't add to the iPhone calendar. Use <b>Google Calendar</b>, or tap <b>⋯</b> then <b>Open in Safari</b> or Chrome.</p>
+    <p class="note">iPhone: tap <b>Add All</b> on the calendar screen. Android: open the file with your Calendar app. Or use the <b>Google</b> buttons.</p>
   </section>
 
   <div class="gear">
@@ -870,10 +879,14 @@ dialog.sheet::backdrop{background:rgba(4,6,12,.8);backdrop-filter:blur(3px)}
         <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Keep it secret until the exchange.</li>
         <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>Open this link again anytime to see it.</li>
       </ul>
-      <button id="resultRemind" class="ghost wide" type="button">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>
-        Remind me to buy the gift
-      </button>
+      <div class="remind-gift">
+        <p class="rg-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>Remind me to buy the gift <span>Nov 26 · 7:00 PM</span></p>
+        <div class="rg-btns">
+          <a id="giftIcs" class="ghost btn-link" href="gift-reminder.ics" target="_blank" rel="noopener">iPhone Calendar</a>
+          <a id="giftGcal" class="ghost btn-link" href="https://calendar.google.com/" target="_blank" rel="noopener">Google Calendar</a>
+        </div>
+        <p class="note inapp-note" hidden>You're in Messenger's browser, which can't add to the iPhone calendar. Use <b>Google Calendar</b>, or tap <b>⋯</b> then <b>Open in Safari</b> or Chrome.</p>
+      </div>
     </div>
   </section>
   </div>
@@ -1021,14 +1034,7 @@ dialog.sheet::backdrop{background:rgba(4,6,12,.8);backdrop-filter:blur(3px)}
   }
 
   // Calendar reminders (Philippine time). Gift reminder never names the monito/monita, so it stays secret on a shared calendar.
-  const REMINDERS = [
-    { id: 'gift', day: 'Nov 26', time: '7:00 PM', title: 'Buy and wrap your monito/monita gift', note: 'R3 Year End Party exchange', start: '20261126T110000Z', end: '20261126T113000Z', alarm: 'PT0S',
-      details: 'R3 Year End Party gift exchange on Nov 29 at Hacienda Don Juan, Glan. Bring the gift wrapped. Keep it secret!', location: 'Kidapawan City' },
-    { id: 'pack', day: 'Nov 28', time: '8:00 PM', title: 'Pack for the R3 Year End Party', note: 'Intercom, riding gear, tent or duyan, gift', start: '20261128T120000Z', end: '20261128T123000Z', alarm: 'PT0S',
-      details: 'Intercom, proper riding gear, tent or duyan, and your wrapped monito/monita gift. The car carries bags and tents.', location: 'Kidapawan City' },
-    { id: 'call', day: 'Nov 29', time: '5:00 AM', title: 'R3 Year End Party: call time 5:00 AM', note: 'Shell Kidapawan. Jump off 6:00 AM', start: '20261128T210000Z', end: '20261128T220000Z', alarm: '-PT60M',
-      details: 'Call time 5:00 AM at Shell Kidapawan near CDK. Jump off 6:00 AM to Hacienda Don Juan, Glan, Sarangani. Shell map: https://maps.app.goo.gl/sBrpZ61fC94Cr3eq7', location: 'Shell, National Highway, Kidapawan City' }
-  ];
+  const REMINDERS = [{"id": "gift", "day": "Nov 26", "time": "7:00 PM", "title": "Buy and wrap your monito/monita gift", "note": "R3 Year End Party exchange", "start": "20261126T110000Z", "end": "20261126T113000Z", "alarm": "PT0S", "details": "R3 Year End Party gift exchange on Nov 29 at Hacienda Don Juan, Glan. Bring the gift wrapped. Keep it secret!", "location": "Kidapawan City"}, {"id": "pack", "day": "Nov 28", "time": "8:00 PM", "title": "Pack for the R3 Year End Party", "note": "Intercom, riding gear, tent or duyan, gift", "start": "20261128T120000Z", "end": "20261128T123000Z", "alarm": "PT0S", "details": "Intercom, proper riding gear, tent or duyan, and your wrapped monito/monita gift. The car carries bags and tents.", "location": "Kidapawan City"}, {"id": "call", "day": "Nov 29", "time": "5:00 AM", "title": "R3 Year End Party: call time 5:00 AM", "note": "Shell Kidapawan. Jump off 6:00 AM", "start": "20261128T210000Z", "end": "20261128T220000Z", "alarm": "-PT60M", "details": "Call time 5:00 AM at Shell Kidapawan near CDK. Jump off 6:00 AM to Hacienda Don Juan, Glan, Sarangani. Shell map: https://maps.app.goo.gl/sBrpZ61fC94Cr3eq7", "location": "Shell, National Highway, Kidapawan City"}];
   const gcalLink = r => 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent(r.title) +
     '&dates=' + r.start + '/' + r.end + '&details=' + encodeURIComponent(r.details) + '&location=' + encodeURIComponent(r.location) + '&ctz=Asia/Manila';
   function renderReminders(){
@@ -1046,26 +1052,17 @@ dialog.sheet::backdrop{background:rgba(4,6,12,.8);backdrop-filter:blur(3px)}
       li.append(w, t, a); ul.appendChild(li);
     });
   }
-  const icsEsc = t => t.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
-  function buildIcs(list){
-    const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
-    const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//R3 Kidapawan//Year End Party//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH'];
-    list.forEach(r => lines.push('BEGIN:VEVENT', 'UID:r3-yep-2026-' + r.id + '@r3kidapawan', 'DTSTAMP:' + stamp, 'DTSTART:' + r.start, 'DTEND:' + r.end,
-      'SUMMARY:' + icsEsc(r.title), 'DESCRIPTION:' + icsEsc(r.details), 'LOCATION:' + icsEsc(r.location),
-      'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsEsc(r.title), 'TRIGGER:' + r.alarm, 'END:VALARM', 'END:VEVENT'));
-    lines.push('END:VCALENDAR');
-    return lines.join('\r\n') + '\r\n';
+  // Calendar files are real files on the website (reminders.ics, gift-reminder.ics):
+  // Safari opens its "Add to Calendar" sheet for them, Android opens the Calendar app.
+  const IN_APP = /FBAN|FBAV|FB_IAB|FBIOS|Messenger|Instagram|Line\//i.test(navigator.userAgent);
+  function wireReminders(){
+    const gift = REMINDERS.find(r => r.id === 'gift');
+    $('icsBtn').href = BASE + 'reminders.ics';
+    $('giftIcs').href = BASE + 'gift-reminder.ics';
+    $('giftGcal').href = gcalLink(gift);
+    document.querySelectorAll('.inapp-note').forEach(n => n.hidden = !IN_APP);
   }
-  function downloadIcs(list, filename){
-    try {
-      const blob = new Blob([buildIcs(list)], { type: 'text/calendar;charset=utf-8' });
-      const url = URL.createObjectURL(blob), a = document.createElement('a');
-      a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 4000);
-      toast('Open the downloaded file to add it to your calendar');
-    } catch(e){ toast('Use the Google Calendar buttons instead'); }
-  }
-  renderReminders();
+  renderReminders(); wireReminders();
 
   // Sealed awards: a little shake and a teasing message
   const TEASES = ['No peeking, boss!', 'Sealed until Nov 29, 5:30 PM', 'Who will it be? Party night!', 'Behave on the ride, boss', 'Patience, boss. Party night!'];
@@ -1100,8 +1097,6 @@ dialog.sheet::backdrop{background:rgba(4,6,12,.8);backdrop-filter:blur(3px)}
   let tx = null;
   $('photoView').addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
   $('photoView').addEventListener('touchend', e => { if (tx === null) return; const dx = e.changedTouches[0].clientX - tx; tx = null; if (Math.abs(dx) > 40) pvShow(pvAt + (dx < 0 ? 1 : -1)); });
-  $('icsBtn').onclick = () => downloadIcs(REMINDERS, 'r3-year-end-party-reminders.ics');
-  $('resultRemind').onclick = () => downloadIcs(REMINDERS.filter(r => r.id === 'gift'), 'buy-your-monito-monita-gift.ics');
 
   const ORDER = ['pick','gate','reveal'];
   function show(id){

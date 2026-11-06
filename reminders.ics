@@ -1,0 +1,54 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//R3 Kidapawan//Year End Party//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:R3 Year End Party 2026
+X-WR-TIMEZONE:Asia/Manila
+BEGIN:VEVENT
+UID:r3-yep-2026-gift@r3kidapawan
+DTSTAMP:20261106T145047Z
+DTSTART:20261126T110000Z
+DTEND:20261126T113000Z
+SUMMARY:Buy and wrap your monito/monita gift
+DESCRIPTION:R3 Year End Party gift exchange on Nov 29 at Hacienda Don Juan
+ \, Glan. Bring the gift wrapped. Keep it secret!
+LOCATION:Kidapawan City
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Buy and wrap your monito/monita gift
+TRIGGER:PT0S
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:r3-yep-2026-pack@r3kidapawan
+DTSTAMP:20261106T145047Z
+DTSTART:20261128T120000Z
+DTEND:20261128T123000Z
+SUMMARY:Pack for the R3 Year End Party
+DESCRIPTION:Intercom\, proper riding gear\, tent or duyan\, and your wrapp
+ ed monito/monita gift. The car carries bags and tents.
+LOCATION:Kidapawan City
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Pack for the R3 Year End Party
+TRIGGER:PT0S
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:r3-yep-2026-call@r3kidapawan
+DTSTAMP:20261106T145047Z
+DTSTART:20261128T210000Z
+DTEND:20261128T220000Z
+SUMMARY:R3 Year End Party: call time 5:00 AM
+DESCRIPTION:Call time 5:00 AM at Shell Kidapawan near CDK. Jump off 6:00 A
+ M to Hacienda Don Juan\, Glan\, Sarangani. Shell map: https://maps.app.go
+ o.gl/sBrpZ61fC94Cr3eq7
+LOCATION:Shell\, National Highway\, Kidapawan City
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:R3 Year End Party: call time 5:00 AM
+TRIGGER:-PT60M
+END:VALARM
+END:VEVENT
+END:VCALENDAR
